@@ -15,3 +15,7 @@ body{
   color: white;
   background-color: #0a0a0a;
 }
+
+.no-scrollbar{
+  scrollbar-width: none;
+}
