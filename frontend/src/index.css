@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #F84565;
-  --color-primary-dull: #D63854;
+  --color-primary: #f84565;
+  --color-primary-dull: #d63854;
 }
 
 * {
@@ -11,11 +11,21 @@
   scrollbar-color: #787777 #1e1e1e;
 }
 
-body{
+body {
   color: white;
   background-color: #0a0a0a;
 }
 
-.no-scrollbar{
+.no-scrollbar {
   scrollbar-width: none;
 }
+
+html {
+  overflow-y: auto;
+}
+body {
+  overflow-y: hidden;
+  overflow-x: hidden;
+}
+
+
