@@ -109,3 +109,60 @@ export const addShow = async (req, res) => {
   }
 };
 
+//  API: Get all upcoming shows
+export const getShows = async (req, res) => {
+  try {
+    const shows = await Show.find({
+      showDateTime: { $gte: new Date() }, // only future or current shows
+    })
+      .populate("movie")
+      .sort({ showDateTime: 1 });
+
+    res.status(200).json({
+      success: true,
+      shows,
+    });
+  } catch (error) {
+    console.error("Error getting shows:", error.message);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+//  API: Get a single show by ID
+export const getSingleShow = async (req, res) => {
+  try {
+    const { movieId } = req.params;
+
+    if (!movieId) {
+      return res.status(400).json({
+        success: false,
+        message: "Movie ID is required",
+      });
+    }
+
+    const shows = await Show.find({ movie: movieId })
+      .populate("movie")
+      .sort({ showDateTime: 1 });
+
+    if (shows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No shows found for this movie",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      shows,
+    });
+  } catch (error) {
+    console.error("Error getting shows for movie:", error.message);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
