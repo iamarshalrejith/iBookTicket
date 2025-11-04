@@ -1,13 +1,15 @@
 import Show from "../models/Show.js";
 import Booking from "../models/Booking.js";
 
-//  Function to check availability of selected seats for a show
+// Function to check availability of selected seats for a show
 const checkSeatsAvailability = async (showId, selectedSeats) => {
   try {
     const showData = await Show.findById(showId);
     if (!showData) return false;
 
     const occupiedSeats = showData.occupiedSeats || {};
+
+    // Check if any selected seat is already taken
     const isAnySeatTaken = selectedSeats.some((seat) => occupiedSeats[seat]);
     return !isAnySeatTaken;
   } catch (error) {
@@ -16,14 +18,15 @@ const checkSeatsAvailability = async (showId, selectedSeats) => {
   }
 };
 
-// API: Create a new booking
+//  API: Create a new booking
 export const createBooking = async (req, res) => {
   try {
-    // Extract data
+    // Extract data from request
     const { userId } = req.auth(); // assumes auth middleware attaches user info
     const { showId, selectedSeats } = req.body;
 
-    if (!showId || !selectedSeats || selectedSeats.length === 0) {
+    // Validate input
+    if (!showId || !Array.isArray(selectedSeats) || selectedSeats.length === 0) {
       return res.status(400).json({
         success: false,
         message: "Show ID and selected seats are required",
@@ -48,7 +51,7 @@ export const createBooking = async (req, res) => {
       });
     }
 
-    //  Calculate total amount
+    // Calculate total amount
     const amount = showData.showPrice * selectedSeats.length;
 
     // Create booking record
@@ -59,42 +62,54 @@ export const createBooking = async (req, res) => {
       bookedSeats: selectedSeats,
     });
 
-    selectedSeats.map((seat) => {
+    //  Mark seats as occupied
+    selectedSeats.forEach((seat) => {
       showData.occupiedSeats[seat] = userId;
     });
+
     showData.markModified("occupiedSeats");
     await showData.save();
 
-    // Stripe Gateway init
+    //  Integrate Stripe or payment logic here
 
-    //  Return success response
-    res.status(201).json({
+    // Return success response
+    return res.status(201).json({
       success: true,
       message: "Booking created successfully",
       booking,
     });
   } catch (error) {
     console.error("Error creating booking:", error.message);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: error.message,
     });
   }
 };
 
+//  API: Get occupied seats for a show
 export const getOccupiedSeats = async (req, res) => {
   try {
     const { showId } = req.params;
-    const showData = await Show.findById(showId);
 
-    const occupiedSeats = Object.keys(showData.occupiedSeats);
-    res.json({
+    const showData = await Show.findById(showId);
+    if (!showData) {
+      return res.status(404).json({
+        success: false,
+        message: "Show not found",
+      });
+    }
+
+    // Extract all occupied seat keys
+    const occupiedSeats = Object.keys(showData.occupiedSeats || {});
+
+    return res.status(200).json({
       success: true,
-      message: error.message,
+      occupiedSeats,
     });
   } catch (error) {
-    console.error("Error getting occupiedSeats:", error.message);
-    res.status(500).json({
+    console.error("Error getting occupied seats:", error.message);
+    return res.status(500).json({
       success: false,
       message: error.message,
     });
