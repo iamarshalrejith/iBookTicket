@@ -1,12 +1,21 @@
-import express from "express"
-import { protectAdmin } from "../middleware/auth.js"
-import {getAllBookings,getAllShows,getDashboardData,isAdmin} from "../controllers/adminController.js"
+import express from "express";
+import { protectAdmin } from "../middleware/auth.js";
+import { 
+  getAllBookings, 
+  getAllShows, 
+  getDashboardData, 
+  isAdmin,
+  debugUser  // Add this import
+} from "../controllers/adminController.js";
 
-const adminRouter = express.Router()
+const adminRouter = express.Router();
 
-adminRouter.get("/is-admin",protectAdmin,isAdmin)
-adminRouter.get("/dashboard",protectAdmin,getDashboardData)
-adminRouter.get("/all-shows",protectAdmin,getAllShows)
-adminRouter.get("/all-bookings",protectAdmin,getAllBookings)
+// DEBUG ROUTE - Test without protection first
+adminRouter.get("/debug-user", protectAdmin, debugUser);
 
-export default adminRouter
+adminRouter.get("/is-admin", protectAdmin, isAdmin);
+adminRouter.get("/dashboard", protectAdmin, getDashboardData);
+adminRouter.get("/all-shows", protectAdmin, getAllShows);
+adminRouter.get("/all-bookings", protectAdmin, getAllBookings);
+
+export default adminRouter;
